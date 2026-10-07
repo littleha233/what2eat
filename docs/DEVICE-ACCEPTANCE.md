@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 日期 / 执行人 | 2026-10-07 至 08（Asia/Shanghai）/ Codex | 未执行 |
 | 设备 / 系统 | iPhone 17e 模拟器 / iOS 26.3.1 | SDK 与设备未配置 |
-| APP 版本 / commit | 0.2.0 / 工作区未提交代码 | — |
+| APP 版本 / commit | 0.2.0 / `5363ae2`（随后仅更新交付文档） | — |
 | 运行方式 | Expo Go 57.0.9；独立 Release 模拟器 `.app` | — |
 | Bundle ID | com.littleha233.what2eat | — |
 | 构建工具 | Xcode 27.0 / CocoaPods 1.16.2 | — |

@@ -55,4 +55,4 @@ npx expo-doctor
 
 `origin`：[littleha233/what2eat](https://github.com/littleha233/what2eat)，主分支 `main`。每个功能必要验证通过后，精确提交本任务文件、推送独立分支，检查 PR 全部差异、冲突及必需检查/审核后合并 main，核验远端 SHA。不强推、不绕过保护。
 
-本轮代码目前尚未提交或推送；交付时更新实际 commit/PR 结果。**本轮不部署、不上架。** Notion 保留进展与审计，最终 Done 留给人工验收。
+V0.2 实现提交为 `5363ae2`，已推送 `codex/photo-diary-v02` 并创建 [PR #2](https://github.com/littleha233/what2eat/pull/2)；CI、审核及合并结果以该 PR 的实时记录为准。**本轮不部署、不上架。** Notion 保留进展与审计，最终 Done 留给人工验收。

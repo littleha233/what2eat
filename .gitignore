@@ -4,3 +4,13 @@
 !.env.example
 local-data/
 uploads/
+node_modules/
+.expo/
+dist/
+coverage/
+ios/
+android/
+*.tsbuildinfo
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

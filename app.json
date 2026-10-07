@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "吃什么",
+    "slug": "what2eat",
+    "version": "0.2.0",
+    "scheme": "what2eat",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.littleha233.what2eat",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.littleha233.what2eat",
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_MEDIA_VIDEO"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "选择一张餐食照片，保存到你自己的饮食记录。",
+          "cameraPermission": "拍下这一餐，保存到你自己的饮食记录。",
+          "microphonePermission": false
+        }
+      ],
+      "expo-sqlite",
+      "expo-image",
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}

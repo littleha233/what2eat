@@ -8,6 +8,8 @@
 
 沿用生产 iPhone 17e / iOS 26.3.1 模拟器及独立 APP（`com.littleha233.what2eat`），保留其记录。生产 APP 已打开新增页和系统相册；自动化两次坐标点选均返回 `noWindowsAvailable`，没有完成选图。今日没有确认 Mac 锁屏，不能照搬此前原因。已经请用户协助点选非私人测试图，尚未获得成功选图结果。
 
+本阶段生产存储实现为 `ebcba76`，对应 [PR #3](https://github.com/littleha233/what2eat/pull/3)；随后仅补充交付文档。结果文件中保存了五个生产模块的 SHA-256，已与最终源码比对一致。
+
 隔离原生存储检查 11 项已通过：使用 `What2Eat Storage Check` / iOS 26.3.1 模拟器、Bundle ID `com.littleha233.what2eat.storagecheck`，调用生产 `getMealService()` 初始化、SQLite、ImageManipulator 与私有照片文件代码。保存仅照片记录后删除临时源，驱动实际执行 `terminate/launch`，两次进程和 JS runtime 不同；重开后主图为 960×720 / 21,484 bytes、缩略图为 400×300 / 6,197 bytes，与首轮一致且均可原生解码。
 
 第二次启动经生产初始化回收预先创建的孤立目录，已提交照片保留，重复回收删除数为 0。重复保存、替换照片并回收旧图、原生临时源缺失时不产生记录且同 ID 可重试、删除记录及文件也通过。结果为 `local-data/native-storage-smoke-1792393814484/result.json`，记录了源码哈希；原始 JSON、日志和运行包副本不提交 Git。

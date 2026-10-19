@@ -57,4 +57,4 @@ npx expo-doctor
 
 `origin`：[littleha233/what2eat](https://github.com/littleha233/what2eat)，主分支 `main`。每个功能必要验证通过后，精确提交本任务文件、推送独立分支，检查 PR 全部差异、冲突及必需检查/审核后合并 main，核验远端 SHA。不强推、不绕过保护。
 
-V0.2 初始实现 `5363ae2` 已通过 [PR #2](https://github.com/littleha233/what2eat/pull/2) 合并到 `main`（`60f21f8`）。10 月 19 日照片可靠性阶段使用独立分支 `codex/photo-reliability-stage`，本阶段 Git 结果待实际完成后记录。**本轮不部署、不上架。** Notion 保留进展与审计，最终 Done 留给人工验收。
+V0.2 初始实现 `5363ae2` 已通过 [PR #2](https://github.com/littleha233/what2eat/pull/2) 合并到 `main`（`60f21f8`）。10 月 19 日照片可靠性实现为 `ebcba76`，已推送 `origin/codex/photo-reliability-stage` 并创建 [PR #3](https://github.com/littleha233/what2eat/pull/3)；本阶段 CI、审核及合并结果以 PR 的实时记录为准。**本轮不部署、不上架。** Notion 保留进展与审计，最终 Done 留给人工验收。

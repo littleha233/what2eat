@@ -2,7 +2,7 @@ import { randomUUID } from 'expo-crypto';
 import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 import { createMealService, type MealService } from '../core/mealService';
 import { createMealRepository } from './mealRepository';
-import { photos } from './photos';
+import { photos, recoverPhotos } from './photos';
 
 let initialization: Promise<MealService> | undefined;
 
@@ -16,6 +16,8 @@ export function getMealService(): Promise<MealService> {
         database = await openDatabaseAsync('what2eat.db');
         const repository = createMealRepository(database);
         await repository.initialize();
+        // No caller can save until this shared initialization promise returns the service.
+        await recoverPhotos(repository);
         const service = createMealService(repository, photos);
         await service.retryPhotoCleanup();
         return service;

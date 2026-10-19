@@ -3,8 +3,8 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { ImageManipulator, SaveFormat, type ImageManipulatorContext, type ImageRef } from 'expo-image-manipulator';
 import type { PhotoStore } from '../core/mealService';
 import type { Photo } from '../core/meals';
-
-const PHOTO_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import type { MealRepository } from './mealRepository';
+import { PHOTO_ID, recoverUnreferencedPhotos, type PhotoRecoveryResult } from './photoRecovery';
 
 function directoryFor(id: string) {
   if (!PHOTO_ID.test(id)) throw new Error('照片标识无效，无法读取或删除。');
@@ -13,6 +13,27 @@ function directoryFor(id: string) {
 
 export function photoUri(photo: Photo, thumbnail = false): string {
   return new File(directoryFor(photo.id), thumbnail ? 'thumbnail.jpg' : 'main.jpg').uri;
+}
+
+export async function recoverPhotos(repository: Pick<MealRepository, 'list'>): Promise<PhotoRecoveryResult> {
+  try {
+    const root = new Directory(Paths.document, 'meal-photos');
+    const entries = (directory: Directory) => directory.list().map((entry) => ({
+      name: entry.name,
+      kind: entry instanceof Directory ? 'directory' as const : 'file' as const,
+    }));
+    return await recoverUnreferencedPhotos(repository, {
+      async list() { return root.exists ? entries(root) : []; },
+      async listContents(id) { return entries(directoryFor(id)); },
+      async removeDirectory(id) {
+        const directory = directoryFor(id);
+        if (directory.exists) directory.delete();
+      },
+    });
+  } catch {
+    // Even an unavailable private directory must leave text records usable.
+    return { removed: 0, failed: 0, status: 'storage-unavailable' };
+  }
 }
 
 function fit(context: ImageManipulatorContext, width: number, height: number, longest: number) {

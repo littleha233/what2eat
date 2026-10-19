@@ -1,10 +1,11 @@
 import { randomUUID } from 'expo-crypto';
 import type { PhotoStore } from '../core/mealService';
 import type { Photo } from '../core/meals';
+import type { MealRepository } from './mealRepository';
+import { PHOTO_ID, type PhotoRecoveryResult } from './photoRecovery';
 
 // Browser-only development preview. Native builds use photos.ts and the app's private files.
 const prefix = 'what2eat.preview.photo.';
-const PHOTO_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function keyFor(id: string, thumbnail = false) {
   if (!PHOTO_ID.test(id)) throw new Error('照片标识无效。');
   return `${prefix}${id}.${thumbnail ? 'thumbnail' : 'main'}`;
@@ -12,6 +13,11 @@ function keyFor(id: string, thumbnail = false) {
 
 export function photoUri(photo: Photo, thumbnail = false): string {
   return localStorage.getItem(keyFor(photo.id, thumbnail)) ?? '';
+}
+
+export async function recoverPhotos(_repository: Pick<MealRepository, 'list'>): Promise<PhotoRecoveryResult> {
+  // Preview tabs share localStorage and may be saving independently. Never sweep another tab's uncommitted photo.
+  return { removed: 0, failed: 0, status: 'preview-skipped' };
 }
 
 function loadImage(uri: string): Promise<HTMLImageElement> {

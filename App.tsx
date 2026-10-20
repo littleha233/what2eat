@@ -2,20 +2,23 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, Modal, Platform, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { filterMeals, type HistoryRange, type Meal } from './src/core/meals';
+import { localDayKey, type HistoryRange, type Meal } from './src/core/meals';
 import type { MealService } from './src/core/mealService';
 import { createId, getMealService } from './src/storage/runtime';
 import { Button, colors, Loading, ui } from './src/ui/components';
 import { Timeline } from './src/ui/Timeline';
+import { MealCalendar } from './src/ui/MealCalendar';
 import { MealEditor, type PageHandle } from './src/ui/MealEditor';
 import { MealDetail } from './src/ui/MealDetail';
 
-type Screen = { kind: 'home' } | { kind: 'detail'; id: string } | { kind: 'editor'; id: string; meal?: Meal };
+type Screen = { kind: 'home' } | { kind: 'detail'; id: string } | { kind: 'editor'; id: string; meal?: Meal; initialEatenAt?: string };
 
 function DiaryApp() {
   const [service, setService] = useState<MealService | null>(null);
   const [meals, setMeals] = useState<Meal[]>([]);
   const [range, setRange] = useState<HistoryRange>(7);
+  const [homeView, setHomeView] = useState<'calendar' | 'list'>('calendar');
+  const [selectedDay, setSelectedDay] = useState(() => localDayKey(new Date()));
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,20 +54,30 @@ function DiaryApp() {
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 6000); return () => clearTimeout(timer); }, [notice]);
   const saved = (meal: Meal) => {
     ++generation.current; setMeals((current) => [meal, ...current.filter((item) => item.id !== meal.id)]); setNow(new Date()); setError('');
-    const hidden = !filterMeals([meal], range).length;
-    if (hidden) setRange('all');
-    setNotice(hidden ? '已保存这一餐 · 已切换到全部记录' : '已保存这一餐'); setScreen({ kind: 'home' });
+    setSelectedDay(localDayKey(meal.eatenAt)); setHomeView('calendar');
+    setNotice('已保存这一餐'); setScreen({ kind: 'home' });
+  };
+  const addMeal = (day?: string) => {
+    const current = new Date();
+    let initialEatenAt: string | undefined;
+    if (day && day < localDayKey(current)) {
+      const date = new Date(`${day}T12:00:00`);
+      date.setHours(current.getHours(), current.getMinutes(), current.getSeconds(), current.getMilliseconds());
+      initialEatenAt = date.toISOString();
+    }
+    setScreen({ kind: 'editor', id: createId(), initialEatenAt });
   };
   const deleted = (id: string) => { ++generation.current; setMeals((current) => current.filter((meal) => meal.id !== id)); setScreen((current) => current.kind === 'detail' && current.id === id ? { kind: 'home' } : current); setNotice('已删除记录'); };
   const currentMeal = screen.kind === 'detail' ? meals.find((meal) => meal.id === screen.id) : undefined;
   return <SafeAreaView style={ui.page}>
     <StatusBar style="dark" />
     {loading ? <Loading /> : !service ? <View style={{ flex: 1, justifyContent: 'center', gap: 20, padding: 28 }}><Text style={ui.title}>你的记录仍在本机</Text><Text style={ui.error}>{error}</Text><Button title="重新打开" onPress={() => { setLoading(true); void reload(); }} /></View>
-      : <Timeline meals={meals} range={range} onRange={setRange} now={now} onAdd={() => setScreen({ kind: 'editor', id: createId() })} onOpen={(meal) => setScreen({ kind: 'detail', id: meal.id })} onStorage={() => setStorageOpen(true)} notice={notice} error={error} onRetry={() => void reload()} />}
+      : homeView === 'calendar' ? <MealCalendar meals={meals} now={now} selectedDay={selectedDay} onSelectDay={setSelectedDay} onAdd={addMeal} onOpen={(meal) => setScreen({ kind: 'detail', id: meal.id })} onStorage={() => setStorageOpen(true)} onList={() => setHomeView('list')} notice={notice} error={error} onRetry={() => void reload()} />
+      : <Timeline meals={meals} range={range} onRange={setRange} now={now} onAdd={addMeal} onOpen={(meal) => setScreen({ kind: 'detail', id: meal.id })} onStorage={() => setStorageOpen(true)} onCalendar={() => setHomeView('calendar')} notice={notice} error={error} onRetry={() => void reload()} />}
     <Modal visible={screen.kind !== 'home'} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => pageHandle.current?.requestClose()}>
       <SafeAreaProvider>
       <SafeAreaView style={ui.page}>
-        {service && screen.kind === 'editor' && <MealEditor ref={pageHandle} key={screen.id} id={screen.id} meal={screen.meal} service={service} onSaved={saved} onClose={() => setScreen(screen.meal ? { kind: 'detail', id: screen.meal.id } : { kind: 'home' })} />}
+        {service && screen.kind === 'editor' && <MealEditor ref={pageHandle} key={screen.id} id={screen.id} meal={screen.meal} initialEatenAt={screen.initialEatenAt} service={service} onSaved={saved} onClose={() => setScreen(screen.meal ? { kind: 'detail', id: screen.meal.id } : { kind: 'home' })} />}
         {service && screen.kind === 'detail' && (currentMeal ? <MealDetail ref={pageHandle} meal={currentMeal} service={service} onClose={() => setScreen({ kind: 'home' })} onEdit={() => setScreen({ kind: 'editor', id: currentMeal.id, meal: currentMeal })} onDeleted={() => deleted(currentMeal.id)} /> : <View style={{ padding: 24, gap: 20 }}><Text style={ui.body}>这条记录已不存在。</Text><Button title="返回记录" onPress={() => setScreen({ kind: 'home' })} /></View>)}
       </SafeAreaView>
       </SafeAreaProvider>

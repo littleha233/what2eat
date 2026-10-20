@@ -6,9 +6,9 @@ import { Button, colors, fullDate, PhotoView, timeLabel, ui } from './components
 
 const ranges: { value: HistoryRange; title: string }[] = [{ value: 3, title: '近三天' }, { value: 7, title: '近一周' }, { value: 30, title: '近一个月' }, { value: 'all', title: '全部' }];
 
-export function Timeline({ meals, range, onRange, onAdd, onOpen, onStorage, notice, error, onRetry, now }: {
+export function Timeline({ meals, range, onRange, onAdd, onOpen, onStorage, onCalendar, notice, error, onRetry, now }: {
   meals: Meal[]; range: HistoryRange; onRange: (range: HistoryRange) => void; onAdd: () => void; onOpen: (meal: Meal) => void;
-  onStorage: () => void; notice: string; error: string; onRetry: () => void; now: Date;
+  onStorage: () => void; onCalendar?: () => void; notice: string; error: string; onRetry: () => void; now: Date;
 }) {
   const filtered = filterMeals(meals, range, now);
   const sections = groupMealsByDay(filtered).map((group) => ({ ...group, data: group.meals }));
@@ -18,6 +18,7 @@ export function Timeline({ meals, range, onRange, onAdd, onOpen, onStorage, noti
       <Pressable accessibilityRole="button" accessibilityLabel="本地存储说明" onPress={onStorage} style={styles.storage}><View style={styles.dot} /><Text style={{ color: colors.green, fontSize: 12 }}>仅存本机</Text></Pressable>
     </View>
     {Platform.OS === 'web' && <Text style={[ui.muted, { paddingHorizontal: 20 }]}>浏览器开发预览 · 与手机数据独立，不代表移动端验收</Text>}
+    {onCalendar && <Button title="‹ 返回饮食日历" variant="quiet" onPress={onCalendar} style={{ alignSelf: 'flex-start', marginHorizontal: 20, marginBottom: 12 }} />}
     <View style={styles.filters}>{ranges.map((item) => <Pressable key={item.value} accessibilityRole="button" accessibilityState={{ selected: range === item.value }} onPress={() => onRange(item.value)}
       style={[styles.filter, range === item.value && styles.activeFilter]}><Text style={{ fontSize: 14, fontWeight: range === item.value ? '600' : '400', color: range === item.value ? colors.white : colors.muted }}>{item.title}</Text></Pressable>)}</View>
     <View style={styles.summary}><Text style={ui.muted}>{range === 'all' ? '所有留下的餐食' : `含今天的最近 ${range} 个自然日`}</Text><Text style={ui.muted}>{filtered.length} 条记录</Text></View>

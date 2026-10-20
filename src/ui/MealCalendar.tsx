@@ -57,30 +57,26 @@ export function MealCalendar({ meals, now, selectedDay, onSelectDay, onAdd, onOp
     <FlatList style={{ flex: 1 }} data={selectedMeals} keyExtractor={(meal) => meal.id} showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.content} initialNumToRender={4} maxToRenderPerBatch={5} windowSize={5}
       ListHeaderComponent={<>
-        <View style={styles.heading}>
-          <View style={{ flex: 1, paddingRight: 8 }}><Text style={ui.title}>吃什么</Text><Text style={[ui.muted, { marginTop: 5 }]}>记下每一餐，回看每一天。</Text></View>
-          <Pressable accessibilityRole="button" accessibilityLabel="本地存储说明" onPress={onStorage} style={styles.storage}><View style={styles.storageDot} /><Text style={styles.storageText}>仅存本机</Text></Pressable>
-        </View>
-        {Platform.OS === 'web' && <Text style={[ui.muted, { marginBottom: 12 }]}>浏览器开发预览 · 与手机数据独立，不代表移动端验收</Text>}
         <View style={styles.sectionHeading}>
           <Text style={styles.sectionTitle}>饮食日历</Text>
-          <Pressable accessibilityRole="button" onPress={onList} style={styles.listLink}><Text style={styles.linkText}>按列表查看 ›</Text></Pressable>
+          <View style={styles.headerActions}>
+            <Pressable accessibilityRole="button" accessibilityLabel="本地存储说明" onPress={onStorage} style={styles.storage}><View style={styles.storageDot} /><Text style={styles.storageText}>仅存本机</Text></Pressable>
+            <Pressable accessibilityRole="button" onPress={onList} style={styles.listLink}><Text style={styles.linkText}>按列表查看 ›</Text></Pressable>
+          </View>
         </View>
+        {Platform.OS === 'web' && <Text style={[ui.muted, { marginBottom: 12 }]}>浏览器开发预览 · 与手机数据独立，不代表移动端验收</Text>}
         <View style={styles.calendar}>
           <View style={styles.monthHeader}>
             <Pressable accessibilityRole="button" accessibilityLabel="查看上个月" onPress={() => showMonth(-1)} style={styles.monthArrow}><Text style={styles.arrowText}>‹</Text></Pressable>
-            <Text accessibilityRole="header" style={styles.monthTitle}>{month.getFullYear()} 年 {month.getMonth() + 1} 月</Text>
+            <View style={styles.monthLabel}><Text accessibilityRole="header" style={styles.monthTitle}>{month.getFullYear()} 年 {month.getMonth() + 1} 月</Text><Text style={styles.monthCount}>{recordCount} 餐 · {recordedDayCount} 天有记录</Text></View>
             <Pressable accessibilityRole="button" accessibilityLabel="查看下个月" accessibilityState={{ disabled: nextMonthDisabled }}
               disabled={nextMonthDisabled} onPress={() => showMonth(1)} style={[styles.monthArrow, nextMonthDisabled && styles.disabled]}><Text style={styles.arrowText}>›</Text></Pressable>
-          </View>
-          <View style={styles.monthSummary}><Text style={ui.muted}>{recordCount} 餐记录 · {recordedDayCount} 天有记录</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="回到今天" onPress={showToday} style={styles.todayButton}><Text style={styles.todayButtonText}>回今天</Text></Pressable>
           </View>
           <View style={styles.weekRow}>{weekdays.map((day) => <Text key={day} style={styles.weekday}>{day}</Text>)}</View>
           {rows.map((row, index) => <View key={index} style={styles.weekRow}>{row.map((day, column) => day
             ? <CalendarCell key={day.key} day={day} selected={day.key === selectedDay} onPress={() => onSelectDay(day.key)} />
             : <View key={`empty-${column}`} style={styles.daySlot} />)}</View>)}
-          <Text style={styles.calendarHint}>点一个日子，翻看那天吃过的。</Text>
         </View>
         {!!notice && <Text accessibilityLiveRegion="polite" style={styles.notice}>{notice}</Text>}
         {!!error && <View style={styles.errorBox}><Text accessibilityRole="alert" style={ui.error}>{error}</Text><Button title="重新读取" variant="quiet" onPress={onRetry} /></View>}
@@ -131,30 +127,29 @@ function CalendarThumbnail({ photo }: { photo: Photo }) {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingBottom: 24, flexGrow: 1 },
-  heading: { paddingTop: 17, paddingBottom: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  storage: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#EDF1E9', paddingHorizontal: 11, minHeight: 44, borderRadius: 24 },
+  storage: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 44, paddingHorizontal: 3 },
   storageDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.green }, storageText: { color: colors.green, fontSize: 12 },
-  sectionHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: colors.ink }, listLink: { minHeight: 44, justifyContent: 'center', paddingLeft: 12 },
-  linkText: { color: colors.green, fontSize: 13 }, calendar: { backgroundColor: '#F0F0E8', borderRadius: 22, padding: 10, paddingBottom: 14 },
+  sectionHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingTop: 4, marginBottom: 4 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: colors.ink }, listLink: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 3 },
+  linkText: { color: colors.green, fontSize: 12 }, calendar: { backgroundColor: '#F0F0E8', borderRadius: 18, padding: 8 },
   monthHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   monthArrow: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }, arrowText: { fontSize: 30, lineHeight: 34, color: colors.ink },
-  monthTitle: { fontSize: 20, fontWeight: '600', color: colors.ink },
-  monthSummary: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 8, paddingRight: 4, marginBottom: 7 },
-  todayButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 9 }, todayButtonText: { fontSize: 13, fontWeight: '600', color: colors.green },
-  weekRow: { flexDirection: 'row' }, weekday: { flex: 1, textAlign: 'center', color: colors.muted, fontSize: 12, paddingBottom: 7, paddingTop: 3 },
-  daySlot: { flex: 1, padding: 2 }, dayCell: { minHeight: 48, aspectRatio: 0.88, borderRadius: 11, borderWidth: 2, borderColor: 'transparent', overflow: 'hidden', alignItems: 'center', paddingTop: 4 },
+  monthLabel: { flex: 1, alignItems: 'center' }, monthTitle: { fontSize: 17, fontWeight: '600', color: colors.ink },
+  monthCount: { color: colors.muted, fontSize: 10, lineHeight: 15 },
+  todayButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 7 }, todayButtonText: { fontSize: 12, fontWeight: '600', color: colors.green },
+  weekRow: { flexDirection: 'row' }, weekday: { flex: 1, textAlign: 'center', color: colors.muted, fontSize: 11, paddingBottom: 4, paddingTop: 2 },
+  daySlot: { flex: 1, padding: 1 }, dayCell: { minHeight: 44, borderRadius: 9, borderWidth: 2, borderColor: 'transparent', overflow: 'hidden', alignItems: 'center', paddingTop: 2 },
   recordedDay: { backgroundColor: '#E1E6DA' }, todayCell: { backgroundColor: '#E4EADF' }, selectedCell: { backgroundColor: colors.soft, borderColor: colors.accent },
-  disabled: { opacity: 0.28 }, dayNumberWrap: { minWidth: 23, minHeight: 23, borderRadius: 8, paddingHorizontal: 2, alignItems: 'center', justifyContent: 'center' },
+  disabled: { opacity: 0.28 }, dayNumberWrap: { minWidth: 22, minHeight: 21, borderRadius: 7, paddingHorizontal: 2, alignItems: 'center', justifyContent: 'center' },
   dayNumber: { fontSize: 14, color: colors.ink, fontWeight: '500' }, todayNumber: { fontWeight: '700', color: colors.green },
   photoNumberWrap: { backgroundColor: '#282E2999' }, photoNumber: { color: colors.white },
-  recordBadge: { minWidth: 16, height: 14, borderRadius: 5, alignItems: 'center', justifyContent: 'center', marginTop: 1, paddingHorizontal: 3 },
-  recordBadgeText: { fontSize: 10, lineHeight: 13, color: colors.green, fontWeight: '700' }, photoBadge: { backgroundColor: '#282E2999' },
+  recordBadge: { minWidth: 14, minHeight: 12, borderRadius: 4, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 },
+  recordBadgeText: { fontSize: 9, lineHeight: 11, color: colors.green, fontWeight: '700' }, photoBadge: { backgroundColor: '#282E2999' },
   todayDot: { position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: 3, backgroundColor: colors.green, borderColor: colors.paper, borderWidth: 1 },
-  calendarHint: { textAlign: 'center', fontSize: 12, color: colors.muted, marginTop: 11 },
   notice: { marginTop: 14, color: colors.green, backgroundColor: '#EDF1E9', borderRadius: 10, padding: 12, fontSize: 14 },
-  errorBox: { marginTop: 14, gap: 8 }, selectedHeading: { marginTop: 24, marginBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  selectedTitle: { fontSize: 21, fontWeight: '600', color: colors.ink }, backfillButton: { paddingHorizontal: 12, minHeight: 44 },
+  errorBox: { marginTop: 14, gap: 8 }, selectedHeading: { marginTop: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  selectedTitle: { fontSize: 19, fontWeight: '600', color: colors.ink }, backfillButton: { paddingHorizontal: 12, minHeight: 44 },
   card: { backgroundColor: colors.white, borderRadius: 18, borderColor: colors.line, borderWidth: StyleSheet.hairlineWidth, marginBottom: 12, overflow: 'hidden' },
   cardContent: { padding: 14, gap: 6 }, cardTitle: { fontSize: 17, fontWeight: '600', lineHeight: 24, color: colors.ink, flex: 1 },
   empty: { paddingHorizontal: 8, paddingTop: 14, paddingBottom: 24, alignItems: 'center' },

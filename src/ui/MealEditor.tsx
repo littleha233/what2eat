@@ -8,8 +8,8 @@ import { photoUri } from '../storage/photos';
 import { Button, colors, fullDate, PhotoView, timeLabel, ui } from './components';
 
 export type PageHandle = { requestClose: () => void };
-export const MealEditor = forwardRef<PageHandle, { id: string; meal?: Meal; service: MealService; onSaved: (meal: Meal) => void; onClose: () => void }>(function MealEditor({ id, meal, service, onSaved, onClose }, ref) {
-  const [draft, setDraft] = useState<MealDraft>(() => meal ? draftFromMeal(meal) : { id, eatenAt: new Date().toISOString(), description: '', restaurant: '', mealType: '', notes: '', existingPhoto: null, newPhotoUri: null });
+export const MealEditor = forwardRef<PageHandle, { id: string; meal?: Meal; initialEatenAt?: string; service: MealService; onSaved: (meal: Meal) => void; onClose: () => void }>(function MealEditor({ id, meal, initialEatenAt, service, onSaved, onClose }, ref) {
+  const [draft, setDraft] = useState<MealDraft>(() => meal ? draftFromMeal(meal) : { id, eatenAt: initialEatenAt ?? new Date().toISOString(), description: '', restaurant: '', mealType: '', notes: '', existingPhoto: null, newPhotoUri: null });
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -17,7 +17,7 @@ export const MealEditor = forwardRef<PageHandle, { id: string; meal?: Meal; serv
   const [dateOpen, setDateOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(!!meal);
   const busy = useRef(false);
-  const dateWasEdited = useRef(false);
+  const dateWasEdited = useRef(!!initialEatenAt);
   const patch = (change: Partial<MealDraft>) => { setDraft((value) => ({ ...value, ...change })); setDirty(true); setError(''); };
   const patchDate = (date: Date) => {
     if (busy.current) return;
@@ -82,8 +82,9 @@ export const MealEditor = forwardRef<PageHandle, { id: string; meal?: Meal; serv
   }
 
   return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={ui.page}>
-    <View style={ui.header}><Button title="取消" variant="quiet" disabled={saving || picking} onPress={close} /><Text style={{ fontSize: 19, fontWeight: '600', color: colors.ink }}>{meal ? '编辑这一餐' : '记一餐'}</Text><View style={{ width: 68 }} /></View>
+    <View style={ui.header}><Button title="取消" variant="quiet" disabled={saving || picking} onPress={close} /><Text style={{ fontSize: 19, fontWeight: '600', color: colors.ink }}>{meal ? '编辑这一餐' : initialEatenAt ? '补记这一餐' : '记一餐'}</Text><View style={{ width: 68 }} /></View>
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20, gap: 18, paddingBottom: 32 }}>
+      {!meal && !!initialEatenAt && <Text style={ui.muted}>补记到 {fullDate(draft.eatenAt)}</Text>}
       {preview ? <View style={{ gap: 10 }}><PhotoView key={preview} uri={preview} ratio={1.25} contain /><View style={ui.row}><Text style={[ui.muted, { flex: 1 }]}>这张照片，就是这一餐的记忆。</Text><Button title="移除照片" variant="quiet" disabled={saving || picking} onPress={() => patch({ newPhotoUri: null, removePhoto: true })} /></View></View>
         : <View style={styles.photoPlaceholder}><Text style={{ fontSize: 30 }}>＋</Text><Text style={{ fontSize: 18, fontWeight: '600', color: colors.ink }}>留下一张餐食照片</Text><Text style={ui.muted}>也可以不选图，用一句话补记</Text></View>}
       <View style={[ui.row, { gap: 12 }]}><Button title={picking ? '正在获取…' : '拍照'} onPress={() => void pick(true)} disabled={saving || picking} variant="quiet" style={{ flex: 1 }} /><Button title="从相册选图" onPress={() => void pick(false)} disabled={saving || picking} variant="quiet" style={{ flex: 1 }} /></View>
